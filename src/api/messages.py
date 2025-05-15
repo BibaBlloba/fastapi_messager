@@ -39,3 +39,6 @@ async def websocket(
             await redis_manager.send_to_user(
                 user_id=message['to'], message=message['content']
             )
+
+        elif message['type'] == 'broadcast':
+            await redis_manager.broadcast(message=message['content'])
