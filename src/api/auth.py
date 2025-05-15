@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 
-from src.dependencies import DbDep
-from src.schemas.users import UserAdd, UserRequestAdd
+from src.dependencies import DbDep, ValidateUserDap
+from src.schemas.users import User, UserAdd, UserRequestAdd
 from src.services.auth import AuthService
-from src.utils.exceptions import ObjectNotFoundException
+from src.utils.exceptions import ObjectExists
 
 router = APIRouter(prefix='/auth', tags=['Auth'])
 
@@ -21,7 +21,24 @@ async def register_user(
     )
     try:
         result = await db.users.add(hashed_user_data)
-    except ObjectNotFoundException as ex:
-        raise HTTPException(409, ex.details)
+    except ObjectExists as ex:
+        raise HTTPException(409, ex.detail)
     await db.commit()
     return result
+
+
+@router.post('/login')
+async def login(
+    response: Response,
+    user: User = ValidateUserDap,
+):
+    jwt_payload = {
+        'id': user.id,
+        'login': user.login,
+        'username': user.login,
+    }
+    access_token = AuthService().create_access_token(jwt_payload)
+    response.set_cookie(
+        'access_token', access_token, secure=False, samesite='lax', httponly=False
+    )
+    return {'access_token': access_token}

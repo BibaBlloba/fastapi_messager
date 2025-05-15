@@ -1,7 +1,7 @@
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, Form, HTTPException, Request
 
 from src.database import async_session_maker
 from src.schemas.users import User
@@ -49,3 +49,22 @@ async def get_current_user(token: str = Depends(get_current_token)):
 
 
 UserDap = Annotated[User, Depends(get_current_user)]
+
+
+async def validate_auth_user(
+    db: DbDep,
+    username: str = Form(),
+    password: str = Form(),
+):
+    unauthException = HTTPException(401, detail='Неверный логин или пароль')
+
+    user = await db.users.get_uesr_with_hashedPwd(login=username, password=password)
+    if not user:
+        raise unauthException
+    if not AuthService().verify_password(password, user.hashed_password):
+        raise unauthException
+
+    return user
+
+
+ValidateUserDap = Depends(validate_auth_user)

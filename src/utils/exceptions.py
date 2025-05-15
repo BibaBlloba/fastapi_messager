@@ -7,3 +7,7 @@ class CustomException(Exception):
 
 class ObjectNotFoundException(CustomException):
     detail = 'Объект не найден'
+
+
+class ObjectExists(CustomException):
+    detail = 'Объект уже существует'

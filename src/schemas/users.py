@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 
 from pydantic import BaseModel, Field
 
@@ -19,7 +19,7 @@ class User(BaseModel):
     id: int
     login: str
     username: str | None
-    created_at: date
+    created_at: datetime
 
 
 class UserUpdateRequest(BaseModel):

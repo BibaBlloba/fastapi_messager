@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.database import Base
 from src.repos.mappers.base import DataMapper
-from src.utils.exceptions import ObjectNotFoundException
+from src.utils.exceptions import ObjectExists, ObjectNotFoundException
 
 
 class BaseRepository:
@@ -28,7 +28,7 @@ class BaseRepository:
         try:
             result = await self.session.execute(add_data_stmt)
         except IntegrityError:
-            raise ObjectNotFoundException
+            raise ObjectExists
         model = result.scalars().one()
         return self.mapper.map_to_domain_entity(model)
 
