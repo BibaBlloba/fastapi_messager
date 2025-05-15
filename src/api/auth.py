@@ -50,3 +50,12 @@ async def get_me(
     user: UserDap,
 ):
     return user
+
+
+@router.post('/logout')
+async def logout(
+    user: UserDap,
+    response: Response,
+):
+    response.delete_cookie('access_token')
+    return {'status': 'ok'}
