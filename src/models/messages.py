@@ -15,15 +15,15 @@ class MessageOrm(Base):
     content: Mapped[str] = mapped_column()
     created_at: Mapped[datetime] = mapped_column(default=datetime.now())
 
-    __table_args__ = (
-        (
-            Index(
-                'idx_message_recipient',
-                'recipient_id',
-            ),
-            Index(
-                'idx_message_sender',
-                'sender_id',
-            ),
-        ),
-    )
+    # __table_args__ = (
+    #     (
+    #         Index(
+    #             'idx_message_recipient',
+    #             'recipient_id',
+    #         ),
+    #         Index(
+    #             'idx_message_sender',
+    #             'sender_id',
+    #         ),
+    #     ),
+    # )

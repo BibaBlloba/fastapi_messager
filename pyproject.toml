@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "aioredis>=2.0.1",
+    "aioredis==2.0.1",
     "alembic>=1.15.2",
     "asyncpg>=0.30.0",
     "bcrypt==4.0.1",
