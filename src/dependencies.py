@@ -3,10 +3,10 @@ from typing import Annotated
 import jwt
 from fastapi import Depends, HTTPException, Request
 
-from services.auth import AuthService
 from src.database import async_session_maker
 from src.schemas.users import User
-from utils.db_manager import DbManager
+from src.services.auth import AuthService
+from src.utils.db_manager import DbManager
 
 
 async def get_db():

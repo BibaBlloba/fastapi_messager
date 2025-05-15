@@ -1,9 +1,8 @@
 from datetime import datetime
 
-from click import DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 
-from database import Base
+from src.database import Base
 
 
 class UserOrm(Base):
@@ -13,4 +12,4 @@ class UserOrm(Base):
     login: Mapped[str] = mapped_column(unique=True)
     username: Mapped[str | None] = mapped_column(unique=True)
     hashed_password: Mapped[str] = mapped_column()
-    created_at: Mapped[DateTime] = mapped_column(default=datetime.now())
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now())

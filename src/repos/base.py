@@ -2,8 +2,8 @@ from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from database import Base
-from repos.mappers.base import DataMapper
+from src.database import Base
+from src.repos.mappers.base import DataMapper
 from src.utils.exceptions import ObjectNotFoundException
 
 

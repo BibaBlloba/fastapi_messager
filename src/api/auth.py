@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException
 
-from dependencies import DbDep
-from schemas.users import UserAdd, UserRequestAdd
-from services.auth import AuthService
-from utils.exceptions import ObjectNotFoundException
+from src.dependencies import DbDep
+from src.schemas.users import UserAdd, UserRequestAdd
+from src.services.auth import AuthService
+from src.utils.exceptions import ObjectNotFoundException
 
 router = APIRouter(prefix='/auth', tags=['Auth'])
 

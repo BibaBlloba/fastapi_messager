@@ -1,6 +1,6 @@
-from models.messages import MessageOrm
-from repos.base import BaseRepository
-from repos.mappers.mappers import MessageDataMapper
+from src.models.messages import MessageOrm
+from src.repos.base import BaseRepository
+from src.repos.mappers.mappers import MessageDataMapper
 
 
 class MessageRepository(BaseRepository):
