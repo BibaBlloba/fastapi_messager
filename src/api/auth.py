@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Response
 
-from src.dependencies import DbDep, ValidateUserDap
+from src.dependencies import DbDep, UserDap, ValidateUserDap
 from src.schemas.users import User, UserAdd, UserRequestAdd
 from src.services.auth import AuthService
 from src.utils.exceptions import ObjectExists
@@ -36,9 +36,17 @@ async def login(
         'id': user.id,
         'login': user.login,
         'username': user.login,
+        'created_at': user.created_at.isoformat(),
     }
     access_token = AuthService().create_access_token(jwt_payload)
     response.set_cookie(
         'access_token', access_token, secure=False, samesite='lax', httponly=False
     )
     return {'access_token': access_token}
+
+
+@router.get('/me')
+async def get_me(
+    user: UserDap,
+):
+    return user
