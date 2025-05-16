@@ -1,3 +1,4 @@
+import asyncio
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -10,12 +11,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.auth import router as auth_router
 from src.api.messages import router as messages_router
-from src.connectors.redis import redis_manager
+from src.connectors.redis import listen_for_redis_messages, redis_manager
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await redis_manager.connect()
+    asyncio.create_task(listen_for_redis_messages())
     yield
 
 

@@ -1,3 +1,4 @@
+import asyncio
 from typing import Dict, Optional
 
 from fastapi import WebSocket
@@ -49,3 +50,26 @@ class RedisWebSocketManager:
 
 
 redis_manager = RedisWebSocketManager()
+
+
+async def listen_for_redis_messages():
+    pubsub = redis_manager.pubsub
+    await redis_manager.subscribe('user:*')
+
+    while True:
+        try:
+            message = await pubsub.get_message(
+                ignore_subscribe_messages=True,
+                timeout=1,
+            )
+
+            if message:
+                channel: str = message['channel']
+                user_id = int(channel.split('1')[1])
+                if user_id in redis_manager.local_connections:
+                    await redis_manager.local_connections[user_id].send_text(
+                        message['content']
+                    )
+        except Exception as ex:
+            print(f'Redis listener error: {ex}')
+            await asyncio.sleep(1)
