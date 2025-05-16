@@ -1,8 +1,9 @@
 import json
 
-from fastapi import APIRouter, Query, Response, WebSocket
+from fastapi import APIRouter, Query, Response, WebSocket, WebSocketDisconnect
 
-from dependencies import UserDap
+from dependencies import DbDep, UserDap
+from schemas.messages import MessageAdd
 from services.auth import AuthService
 from src.connectors.redis import redis_manager
 
@@ -12,33 +13,63 @@ router = APIRouter(prefix='/messages')
 @router.websocket('/ws')
 async def websocket(
     websocket: WebSocket,
+    db: DbDep,
     token: str = Query(),
 ):
-    user_data = AuthService().decode_token(token)
+    try:
+        user_data = AuthService().decode_token(token)
+        user_id: int = user_data.get('id')
+        user_login: str = user_data.get('login')
 
-    await websocket.accept()
-    await redis_manager.add_connection(user_data.get('id'), websocket)
-    await websocket.send_text('Connected')
-    await websocket.send_text(user_data.get('login'))
+        await websocket.accept()
+        await redis_manager.add_connection(user_data.get('id'), websocket)
+        await websocket.send_text('Connected')
+        await websocket.send_text(user_data.get('login'))
 
-    await websocket.send_text(
-        json.dumps(
-            {
-                'status': 'connected',
-                'user_id': user_data['id'],
-                'login': user_data.get('login'),
-            }
-        )
-    )
-
-    while True:
-        data = await websocket.receive_text()
-        message = json.loads(data)
-
-        if message['type'] == 'private':
-            await redis_manager.send_to_user(
-                user_id=message['to'], message=message['content']
+        await websocket.send_text(
+            json.dumps(
+                {
+                    'status': 'connected',
+                    'user_id': user_id,
+                    'login': user_login,
+                }
             )
+        )
 
-        elif message['type'] == 'broadcast':
-            await redis_manager.broadcast(message=message['content'])
+        while True:
+            data = await websocket.receive_text()
+            message = json.loads(data)
+
+            if message['type'] == 'private':
+                await redis_manager.send_to_user(
+                    user_id=message['to'], message=message['content']
+                )
+
+            elif message['type'] == 'broadcast':
+                await redis_manager.broadcast(message=message['content'])
+
+            db_message_data = MessageAdd(
+                sender_id=user_id,
+                recipient_id=message['to'],
+                content=message['content'],
+            )
+            await db.messages.add(db_message_data)
+            await db.commit()
+
+    except WebSocketDisconnect:
+        await redis_manager.remove_connection(user_id)
+    except Exception as e:
+        try:
+            print(e)
+            await websocket.close(code=1011)
+        except RuntimeError:
+            pass
+
+
+@router.get('')
+async def get_all_messages(
+    db: DbDep,
+    user: UserDap,
+):
+    result = await db.messages.get_all_messages(user_id=user.id)
+    return result

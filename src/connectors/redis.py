@@ -38,10 +38,9 @@ class RedisWebSocketManager:
         return await self.redis.smembers('online_users')
 
     async def send_to_user(self, user_id: int, message: str):
-        try:
-            user_id = int(user_id)
+        if user_id in self.local_connections:
             await self.local_connections[user_id].send_text(message)
-        except KeyError:
+        else:
             await self.redis.publish(f'user:{user_id}', message)
 
     async def broadcast(self, message: str):

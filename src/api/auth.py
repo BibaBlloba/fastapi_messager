@@ -59,3 +59,8 @@ async def logout(
 ):
     response.delete_cookie('access_token')
     return {'status': 'ok'}
+
+
+@router.get('')
+async def get_all(db: DbDep, user: UserDap):
+    return await db.users.get_all()

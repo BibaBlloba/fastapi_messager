@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -14,4 +14,4 @@ class Message(BaseModel):
     sender_id: int
     recipient_id: int
     content: str
-    created_at: date
+    created_at: datetime
