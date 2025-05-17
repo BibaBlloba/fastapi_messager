@@ -1,4 +1,4 @@
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, case, func, or_, select
 
 from src.models.messages import MessageOrm
 from src.repos.base import BaseRepository
@@ -21,7 +21,14 @@ class MessageRepository(BaseRepository):
         return grouped
 
     async def get_by_user(self, sender_id: int, user_id: int):
-        query = select(self.model).where(
+        query = select(
+            self.model,
+            case(
+                (MessageOrm.sender_id == sender_id, 'outgoing'),
+                (MessageOrm.sender_id == user_id, 'incoming'),
+                else_=None,
+            ).label('direction'),
+        ).where(
             or_(
                 and_(
                     MessageOrm.sender_id == sender_id,
@@ -34,4 +41,11 @@ class MessageRepository(BaseRepository):
             )
         )
         result = await self.session.execute(query)
-        return result.scalars().all()
+
+        messages = []
+        for row in result:
+            message = row[0]
+            message.direction = row.direction
+            messages.append(message)
+
+        return messages
