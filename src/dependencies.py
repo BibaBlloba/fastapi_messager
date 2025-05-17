@@ -30,7 +30,7 @@ async def get_current_token(request: Request):
     return token
 
 
-async def get_current_user(token: str = Depends(get_current_token)):
+async def get_current_user(db: DbDep, token: str = Depends(get_current_token)):
     try:
         decoded_data = AuthService().decode_token(token)
         user = User(
@@ -39,6 +39,9 @@ async def get_current_user(token: str = Depends(get_current_token)):
             username=decoded_data.get('username'),
             created_at=decoded_data.get('created_at'),
         )
+        user_check = await db.users.get_filtered(id=user.id)
+        if not user_check:
+            raise HTTPException(status_code=401)
     except jwt.exceptions.DecodeError:
         raise HTTPException(status_code=401, detail='Токен не действителен.')
     except KeyError as e:

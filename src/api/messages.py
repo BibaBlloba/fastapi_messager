@@ -73,3 +73,19 @@ async def get_all_messages(
 ):
     result = await db.messages.get_all_messages(user_id=user.id)
     return result
+
+
+@router.get('/users')
+async def get_users_list(
+    db: DbDep,
+    user: UserDap,
+):
+    return await db.users.get_all_with_last_message(user.id)
+
+
+@router.get('/friends')
+async def get_friends_list(
+    db: DbDep,
+    user: UserDap,
+):
+    return await db.users.get_all_with_last_message()
