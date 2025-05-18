@@ -4,6 +4,7 @@ from typing import Dict, Optional
 from fastapi import WebSocket
 from redis import asyncio as aioredis
 
+from schemas.messages import Message
 from src.config import settings
 
 
@@ -37,11 +38,12 @@ class RedisWebSocketManager:
     async def get_online_users(self) -> set:
         return await self.redis.smembers('online_users')
 
-    async def send_to_user(self, user_id: int, message: str):
+    async def send_to_user(self, message: Message):
+        user_id = message.recipient_id
         if user_id in self.local_connections:
-            await self.local_connections[user_id].send_text(message)
+            await self.local_connections[user_id].send_text(message.model_dump_json())
         else:
-            await self.redis.publish(f'user:{user_id}', message)
+            await self.redis.publish(f'user:{user_id}', message.model_dump_json())
 
     async def broadcast(self, message: str):
         for id, websocket in self.local_connections.items():

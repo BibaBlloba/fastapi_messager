@@ -23,37 +23,31 @@ async def websocket(
 
         await websocket.accept()
         await redis_manager.add_connection(user_data.get('id'), websocket)
-        await websocket.send_text('Connected')
-        await websocket.send_text(user_data.get('login'))
 
-        await websocket.send_text(
-            json.dumps(
-                {
-                    'status': 'connected',
-                    'user_id': user_id,
-                    'login': user_login,
-                }
-            )
-        )
+        # await websocket.send_text(
+        #     json.dumps(
+        #         {
+        #             'status': 'connected',
+        #             'user_id': user_id,
+        #             'login': user_login,
+        #         }
+        #     )
+        # )
 
         while True:
             data = await websocket.receive_text()
             message = json.loads(data)
-
-            if message['type'] == 'private':
-                await redis_manager.send_to_user(
-                    user_id=message['to'], message=message['content']
-                )
-
-            elif message['type'] == 'broadcast':
-                await redis_manager.broadcast(message=message['content'])
 
             db_message_data = MessageAdd(
                 sender_id=user_id,
                 recipient_id=message['to'],
                 content=message['content'],
             )
-            await db.messages.add(db_message_data)
+            result = await db.messages.add(db_message_data)
+
+            if message['type'] == 'private':
+                await redis_manager.send_to_user(message=result)
+
             await db.commit()
 
     except WebSocketDisconnect:
