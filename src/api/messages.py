@@ -45,6 +45,8 @@ async def websocket(
             )
             result = await db.messages.add(db_message_data)
 
+            print(result)
+
             if message['type'] == 'private':
                 await redis_manager.send_to_user(message=result)
 
