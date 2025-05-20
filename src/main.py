@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.auth import router as auth_router
 from src.api.messages import router as messages_router
+from src.api.users import router as users_router
 from src.connectors.redis import listen_for_redis_messages, redis_manager
 
 
@@ -32,6 +33,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(messages_router)
+app.include_router(users_router)
 
 
 if __name__ == '__main__':
